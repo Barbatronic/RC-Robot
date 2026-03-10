@@ -11,11 +11,13 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define LED_PIN    3
-#define LED_COUNT  10
+#define LED_COUNT  18
 
 IBusBM IBus; 
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800); //For WS2815
 RoboEyes<Adafruit_SSD1306> roboEyes(display); 
+
+void displayLevel(int level, uint32_t color);
 
 void setup() {
   Serial.begin(115200);
@@ -36,7 +38,7 @@ void setup() {
   strip.begin();
   strip.clear();
   strip.show();
-  strip.setBrightness(100);
+  strip.setBrightness(255);
 
   Serial.println("Start iBUS monitor");
 }
@@ -71,7 +73,9 @@ void loop() {
 
   strip.clear();
   Serial.println(channelValue03);
-  strip.setPixelColor(mappedValue03, strip.Color(mappedValue04, mappedValue04-255, 0));
+  //displayLevel(18, strip.Color(255, 255, 255));
+  displayLevel(mappedValue03, strip.Color(255, 0, 0));
+  //strip.setPixelColor(mappedValue03, strip.Color(mappedValue04, mappedValue04-255, 0));
   strip.show();
 
 
@@ -81,5 +85,20 @@ void loop() {
   }
 
   roboEyes.update();
-  //delay(10);
+  delay(10);
+}
+
+void displayLevel(int level, uint32_t color) {
+  // Constrain the level between 0 and the max number of LEDs
+  if (level < 0) level = 0;
+  if (level > LED_COUNT) level = LED_COUNT;
+
+  for (int i = 0; i < LED_COUNT; i++) {
+    if (i < level) {
+      strip.setPixelColor(i, color); // Turn LED on
+    } else {
+      strip.setPixelColor(i, 0);     // Turn LED off
+    }
+  }
+  strip.show(); // Push the data to the strip
 }
